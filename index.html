@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nihon Solar Portal</title>
-    <style>
-        /* Modern Font */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    
+    <!-- Google Fonts for modern typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <!-- Google Material Icons for responsive buttons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-        /* Basic Resets */
+    <style>
+        /* --- Basic Resets & Global Styles --- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -21,10 +24,9 @@
             font-family: 'Roboto', sans-serif;
             background-color: #f4f7f6;
             color: #333;
-            /* Use Flexbox to create the header/content layout */
-            display: flex;
+            display: flex; /* Use Flexbox for the header/content layout */
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrollbars on the main page */
         }
 
         /* --- Header & Navigation Styling --- */
@@ -32,7 +34,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 16px; /* Reduced padding for mobile-first */
             background-color: #2c3e50; /* Dark blue-grey */
             color: #ecf0f1; /* Light grey text */
             flex-shrink: 0; /* Prevents the header from shrinking */
@@ -41,7 +43,7 @@
         }
 
         .app-title {
-            font-size: 1.4rem;
+            font-size: 1.2rem; /* Adjusted for better mobile display */
             font-weight: 500;
         }
         
@@ -50,7 +52,10 @@
         }
 
         .nav-button {
-            padding: 18px 20px;
+            display: flex; /* Use flex to align icon and text */
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+            padding: 18px 12px;
             border: none;
             background-color: transparent;
             color: #bdc3c7; /* Lighter grey for inactive buttons */
@@ -59,8 +64,14 @@
             cursor: pointer;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
             border-bottom: 3px solid transparent; /* Placeholder for active indicator */
+            white-space: nowrap; /* Prevent text from wrapping */
         }
         
+        .nav-button .material-icons {
+            /* Makes icons look sharp */
+            vertical-align: middle;
+        }
+
         .nav-button:hover {
             background-color: #34495e; /* Slightly lighter dark blue */
             color: #ffffff;
@@ -72,11 +83,14 @@
             border-bottom: 3px solid #3498db; /* Blue indicator line */
         }
         
+        .nav-text {
+            /* Hide text by default (mobile-first approach) */
+            display: none; 
+        }
+
         /* --- Iframe & Content Wrapper --- */
         .content-wrapper {
-            /* This container will grow to fill the remaining space */
-            flex-grow: 1;
-            /* This is needed for the iframe to have a percentage-based height */
+            flex-grow: 1; /* Grow to fill remaining space */
             position: relative; 
         }
 
@@ -87,7 +101,7 @@
             display: block;
         }
 
-        /* --- Loading Spinner (Optional but good UX) --- */
+        /* --- Loading Spinner --- */
         .loader {
             position: absolute;
             top: 50%;
@@ -107,6 +121,22 @@
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
+        /* --- RESPONSIVE DESIGN: Media Query for Desktops --- */
+        /* This applies styles for screens wider than 768px */
+        @media (min-width: 768px) {
+            .app-header {
+                padding: 0 24px; /* More padding on desktop */
+            }
+            .app-title {
+                font-size: 1.4rem; /* Larger title on desktop */
+            }
+            .nav-button {
+                padding: 18px 20px; /* More padding for text */
+            }
+            .nav-text {
+                display: inline; /* Show the text label on wider screens */
+            }
+        }
     </style>
 </head>
 <body>
@@ -116,9 +146,18 @@
         <h1 class="app-title">Nihon Solar Portal</h1>
         <nav class="app-nav">
             <!-- The 'active' class marks the currently selected button -->
-            <button id="btnQuotation" class="nav-button active">Quotation</button>
-            <button id="btnInvoice" class="nav-button">Invoice</button>
-            <button id="btnPdfs" class="nav-button">PDFs Folder</button>
+            <button id="btnQuotation" class="nav-button active">
+                <i class="material-icons">description</i>
+                <span class="nav-text">Quotation</span>
+            </button>
+            <button id="btnInvoice" class="nav-button">
+                <i class="material-icons">receipt_long</i>
+                <span class="nav-text">Invoice</span>
+            </button>
+            <button id="btnPdfs" class="nav-button">
+                <i class="material-icons">folder_open</i>
+                <span class="nav-text">PDFs Folder</span>
+            </button>
         </nav>
     </header>
 
@@ -134,86 +173,60 @@
     </main>
 
 <script>
-    // Wait for the document to be fully loaded before running the script
     document.addEventListener('DOMContentLoaded', function() {
         
         // --- CONFIGURATION: Easily change your links here ---
         const QUOTATION_URL = 'https://script.google.com/macros/s/AKfycbxaDLqkIKyG6hP86_o6TD_HSZnAbR6Q8pQOfmCOpjs3IGO1uik0Kh7dS5OhU8JRROXe/exec/exec';
         const INVOICE_URL = 'https://script.google.com/macros/s/AKfycbzkEIhCjAs2b7CIi82Fol0_EwMfO2vfZeSfvHR2rKM8JiHc0L1CndBb2IslKFqDS5iR/exec';
         const PDFS_FOLDER_URL = 'https://drive.google.com/drive/folders/1UhP7D_GOS5UPfOBwQHCab5wn0Pi8kWIm?usp=sharing';
-        // --- END OF CONFIGURATION ---
 
-        // Get references to all the important elements
+        // Get references to all elements
         const iframe = document.getElementById('appFrame');
         const loader = document.getElementById('loader');
         const btnQuotation = document.getElementById('btnQuotation');
         const btnInvoice = document.getElementById('btnInvoice');
         const btnPdfs = document.getElementById('btnPdfs');
-        
-        // A collection of all buttons that can be active
         const navButtons = [btnQuotation, btnInvoice];
 
-        // --- Iframe Loading Management ---
-        iframe.addEventListener('load', function() {
-            // Hide the loader once the iframe content is loaded
-            loader.style.display = 'none';
-        });
+        // --- Event Listeners ---
+        iframe.addEventListener('load', () => loader.style.display = 'none');
 
-        // Function to change the iframe source and show the loader
         function loadIframe(url) {
             if (iframe.src !== url) {
-                loader.style.display = 'block'; // Show spinner
+                loader.style.display = 'block';
                 iframe.src = url;
             }
         }
 
-        // --- Button Click Event Listeners ---
-
-        // Function to handle the 'active' state of buttons
         function setActiveButton(activeButton) {
-            navButtons.forEach(button => {
-                button.classList.remove('active');
-            });
+            navButtons.forEach(button => button.classList.remove('active'));
             activeButton.classList.add('active');
         }
 
-        // 1. Quotation Button
         btnQuotation.addEventListener('click', function() {
             setActiveButton(this);
             loadIframe(QUOTATION_URL);
         });
 
-        // 2. Invoice Button
         btnInvoice.addEventListener('click', function() {
             setActiveButton(this);
             loadIframe(INVOICE_URL);
         });
 
-        // 3. PDFs Folder Button
-        btnPdfs.addEventListener('click', function() {
-            // This button opens a new tab and does not change the iframe
-            window.open(PDFS_FOLDER_URL, '_blank');
-        });
-
+        btnPdfs.addEventListener('click', () => window.open(PDFS_FOLDER_URL, '_blank'));
     });
 
-
-    // This is your original script for communication from the iframe. It's preserved.
+    // Original script for iframe communication
     window.addEventListener('message', function(event) {
-        if (typeof event.data !== 'string') {
-            return;
-        }
-        let data;
+        if (typeof event.data !== 'string') return;
         try {
-            data = JSON.parse(event.data);
-        } catch (e) {
-            return;
-        }
-        if (data && data.source === 'NihonSolarApp') {
-            if (data.type === 'reloadRequest') {
-                console.log('SUCCESS: Reload request received from NihonSolarApp. Reloading page...');
+            const data = JSON.parse(event.data);
+            if (data && data.source === 'NihonSolarApp' && data.type === 'reloadRequest') {
+                console.log('Reload request received from NihonSolarApp. Reloading...');
                 window.location.reload();
             }
+        } catch (e) {
+            // Not valid JSON, ignore.
         }
     });
 </script>
