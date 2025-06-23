@@ -3,77 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihon Solar Quotation App</title>
+    <title>Nihon Solar Portal</title>
     <style>
-        /* Basic reset to remove default browser spacing */
+        /* Modern Font */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        /* Basic Resets */
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         html, body {
-            margin: 0;
-            padding: 0;
             height: 100%;
             width: 100%;
-            overflow: hidden; /* Prevents scrollbars on the main page */
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            /* Use Flexbox to create the header/content layout */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        /* The iframe styling */
+        /* --- Header & Navigation Styling --- */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            background-color: #2c3e50; /* Dark blue-grey */
+            color: #ecf0f1; /* Light grey text */
+            flex-shrink: 0; /* Prevents the header from shrinking */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .app-title {
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+        
+        .app-nav {
+            display: flex;
+        }
+
+        .nav-button {
+            padding: 18px 20px;
+            border: none;
+            background-color: transparent;
+            color: #bdc3c7; /* Lighter grey for inactive buttons */
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            border-bottom: 3px solid transparent; /* Placeholder for active indicator */
+        }
+        
+        .nav-button:hover {
+            background-color: #34495e; /* Slightly lighter dark blue */
+            color: #ffffff;
+        }
+
+        /* Active button state */
+        .nav-button.active {
+            color: #ffffff; /* White text for active */
+            border-bottom: 3px solid #3498db; /* Blue indicator line */
+        }
+        
+        /* --- Iframe & Content Wrapper --- */
+        .content-wrapper {
+            /* This container will grow to fill the remaining space */
+            flex-grow: 1;
+            /* This is needed for the iframe to have a percentage-based height */
+            position: relative; 
+        }
+
         .app-iframe {
             width: 100%;
             height: 100%;
-            border: none; /* Removes the default ugly iframe border */
-            display: block; /* Ensures no extra space below the iframe */
+            border: none;
+            display: block;
         }
+
+        /* --- Loading Spinner (Optional but good UX) --- */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            transform: translate(-50%, -50%);
+            display: none; /* Initially hidden */
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- 
-        This is the iframe that will contain your Google Apps Script web app.
-        The `src` attribute is set to your specific web app URL.
-    -->
-    <iframe 
-        id="quotationApp"
-        class="app-iframe"
-        src="https://script.google.com/macros/s/AKfycbxaDLqkIKyG6hP86_o6TD_HSZnAbR6Q8pQOfmCOpjs3IGO1uik0Kh7dS5OhU8JRROXe/exec/exec"
-        title="Nihon Solar Quotation Application">
-    </iframe>
-<!-- Add this script to your parent HTML page -->
-<!-- Add this script to your parent HTML page -->
-<!-- Add this script to your parent HTML page -->
+    <!-- Header with Title and Navigation Buttons -->
+    <header class="app-header">
+        <h1 class="app-title">Nihon Solar Portal</h1>
+        <nav class="app-nav">
+            <!-- The 'active' class marks the currently selected button -->
+            <button id="btnQuotation" class="nav-button active">Quotation</button>
+            <button id="btnInvoice" class="nav-button">Invoice</button>
+            <button id="btnPdfs" class="nav-button">PDFs Folder</button>
+        </nav>
+    </header>
+
+    <!-- Wrapper for the iframe and loader -->
+    <main class="content-wrapper">
+        <div id="loader" class="loader"></div>
+        <iframe 
+            id="appFrame"
+            class="app-iframe"
+            src="https://script.google.com/macros/s/AKfycbxaDLqkIKyG6hP86_o6TD_HSZnAbR6Q8pQOfmCOpjs3IGO1uik0Kh7dS5OhU8JRROXe/exec/exec"
+            title="Nihon Solar Application">
+        </iframe>
+    </main>
+
 <script>
-    // Listen for messages from any window
-    window.addEventListener('message', function(event) {
+    // Wait for the document to be fully loaded before running the script
+    document.addEventListener('DOMContentLoaded', function() {
         
-        // First, check if the received data is a string. If not, ignore it.
+        // --- CONFIGURATION: Easily change your links here ---
+        const QUOTATION_URL = 'https://script.google.com/macros/s/AKfycbxaDLqkIKyG6hP86_o6TD_HSZnAbR6Q8pQOfmCOpjs3IGO1uik0Kh7dS5OhU8JRROXe/exec/exec';
+        const INVOICE_URL = 'https://script.google.com/macros/s/AKfycbzkEIhCjAs2b7CIi82Fol0_EwMfO2vfZeSfvHR2rKM8JiHc0L1CndBb2IslKFqDS5iR/exec';
+        const PDFS_FOLDER_URL = 'https://drive.google.com/drive/folders/1UhP7D_GOS5UPfOBwQHCab5wn0Pi8kWIm?usp=sharing';
+        // --- END OF CONFIGURATION ---
+
+        // Get references to all the important elements
+        const iframe = document.getElementById('appFrame');
+        const loader = document.getElementById('loader');
+        const btnQuotation = document.getElementById('btnQuotation');
+        const btnInvoice = document.getElementById('btnInvoice');
+        const btnPdfs = document.getElementById('btnPdfs');
+        
+        // A collection of all buttons that can be active
+        const navButtons = [btnQuotation, btnInvoice];
+
+        // --- Iframe Loading Management ---
+        iframe.addEventListener('load', function() {
+            // Hide the loader once the iframe content is loaded
+            loader.style.display = 'none';
+        });
+
+        // Function to change the iframe source and show the loader
+        function loadIframe(url) {
+            if (iframe.src !== url) {
+                loader.style.display = 'block'; // Show spinner
+                iframe.src = url;
+            }
+        }
+
+        // --- Button Click Event Listeners ---
+
+        // Function to handle the 'active' state of buttons
+        function setActiveButton(activeButton) {
+            navButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            activeButton.classList.add('active');
+        }
+
+        // 1. Quotation Button
+        btnQuotation.addEventListener('click', function() {
+            setActiveButton(this);
+            loadIframe(QUOTATION_URL);
+        });
+
+        // 2. Invoice Button
+        btnInvoice.addEventListener('click', function() {
+            setActiveButton(this);
+            loadIframe(INVOICE_URL);
+        });
+
+        // 3. PDFs Folder Button
+        btnPdfs.addEventListener('click', function() {
+            // This button opens a new tab and does not change the iframe
+            window.open(PDFS_FOLDER_URL, '_blank');
+        });
+
+    });
+
+
+    // This is your original script for communication from the iframe. It's preserved.
+    window.addEventListener('message', function(event) {
         if (typeof event.data !== 'string') {
             return;
         }
-
         let data;
         try {
-            // Try to parse the string as JSON. THIS IS THE KEY CHANGE.
             data = JSON.parse(event.data);
         } catch (e) {
-            // If it's not valid JSON, it's not from our app. Ignore it.
             return;
         }
-
-        // Now that we have a valid object, check for our "secret handshake"
         if (data && data.source === 'NihonSolarApp') {
-
-            // Check for the specific action
             if (data.type === 'reloadRequest') {
                 console.log('SUCCESS: Reload request received from NihonSolarApp. Reloading page...');
-                
-                // Reload the page
                 window.location.reload();
             }
         }
     });
 </script>
-
 
 </body>
 </html>
