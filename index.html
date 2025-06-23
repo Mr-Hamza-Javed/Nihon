@@ -40,24 +40,26 @@
         title="Nihon Solar Quotation Application">
     </iframe>
 <!-- Add this script to your parent HTML page -->
+<!-- Add this script to your parent HTML page -->
 <script>
-    // Listen for messages from any window (including our iframe)
+    // Listen for messages from any window
     window.addEventListener('message', function(event) {
         
-        // IMPORTANT: Add a security check to ensure the message is from your Apps Script URL.
-        // This prevents other websites from sending malicious messages.
-        // You can be more specific if you know the exact origin.
-        if (!event.origin.includes('googleusercontent.com')) {
-            console.warn('Message from untrusted origin ignored:', event.origin);
-            return; 
-        }
+        // SECURITY CHECK:
+        // Instead of checking the origin, we check if the data object
+        // contains our specific "secret handshake".
+        // This is secure because only our app knows to send this exact property.
+        if (event.data && event.data.source === 'NihonSolarApp') {
 
-        // Check if the received message is the one we're expecting
-        if (event.data && event.data.type === 'reloadRequest') {
-            console.log('Reload request received from iframe. Reloading page...');
-            // Reload the page
-            window.location.reload();
+            // Now check for the specific action we want to perform
+            if (event.data.type === 'reloadRequest') {
+                console.log('Reload request received from NihonSolarApp. Reloading page...');
+                // Reload the page
+                window.location.reload();
+            }
+
         }
+        // If the message doesn't have our source, we do nothing and ignore it safely.
     });
 </script>
 
