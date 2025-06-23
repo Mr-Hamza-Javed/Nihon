@@ -41,25 +41,36 @@
     </iframe>
 <!-- Add this script to your parent HTML page -->
 <!-- Add this script to your parent HTML page -->
+<!-- Add this script to your parent HTML page -->
 <script>
     // Listen for messages from any window
     window.addEventListener('message', function(event) {
         
-        // SECURITY CHECK:
-        // Instead of checking the origin, we check if the data object
-        // contains our specific "secret handshake".
-        // This is secure because only our app knows to send this exact property.
-        if (event.data && event.data.source === 'NihonSolarApp') {
+        // First, check if the received data is a string. If not, ignore it.
+        if (typeof event.data !== 'string') {
+            return;
+        }
 
-            // Now check for the specific action we want to perform
-            if (event.data.type === 'reloadRequest') {
-                console.log('Reload request received from NihonSolarApp. Reloading page...');
+        let data;
+        try {
+            // Try to parse the string as JSON. THIS IS THE KEY CHANGE.
+            data = JSON.parse(event.data);
+        } catch (e) {
+            // If it's not valid JSON, it's not from our app. Ignore it.
+            return;
+        }
+
+        // Now that we have a valid object, check for our "secret handshake"
+        if (data && data.source === 'NihonSolarApp') {
+
+            // Check for the specific action
+            if (data.type === 'reloadRequest') {
+                console.log('SUCCESS: Reload request received from NihonSolarApp. Reloading page...');
+                
                 // Reload the page
                 window.location.reload();
             }
-
         }
-        // If the message doesn't have our source, we do nothing and ignore it safely.
     });
 </script>
 
