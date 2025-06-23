@@ -1,1 +1,44 @@
-<iframe scr="https://script.google.com/macros/s/AKfycbxemBG_ES7PFhX1JrFq1FefV_-NVxZaw_WnoAAPk9vJElLLI--ndEcOPZL4yTnoAkpf/exec"></iframe>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon Solar Quotation App</title>
+    <style>
+        /* Basic reset to remove default browser spacing */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevents scrollbars on the main page */
+        }
+
+        /* The iframe styling */
+        .app-iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* Removes the default ugly iframe border */
+            display: block; /* Ensures no extra space below the iframe */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+        This is the iframe that will contain your Google Apps Script web app.
+        The `src` attribute is set to your specific web app URL.
+    -->
+    <iframe 
+        id="quotationApp"
+        class="app-iframe"
+        src="https://script.google.com/macros/s/AKfycbyyfC2cOCZdAuEFQIH3Aw6XkK7RPvinLk_nTCIOAhdw5UODCJszbuSZFgj59-9-vt1O/exec"
+        title="Nihon Solar Quotation Application">
+    </iframe>
+
+</body>
+</html>
