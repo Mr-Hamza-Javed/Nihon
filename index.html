@@ -36,9 +36,31 @@
     <iframe 
         id="quotationApp"
         class="app-iframe"
-        src="https://script.google.com/macros/s/AKfycbxR2Tw30U0cDjTRJYSBo-nL_TttK8xfDmydwXSjofUCuOzdHlSF-t1KUoAmKBE-50lt/exec"
+        src="https://script.google.com/macros/s/AKfycbw7-CZ9xsziun3WyqT3rvAX7IjidLAp3lpbpHU_F6Tdq3Ay1QrAJhU1MozbF9RMW0Us/exec"
         title="Nihon Solar Quotation Application">
     </iframe>
+<!-- Add this script to your parent HTML page -->
+<script>
+    // Listen for messages from any window (including our iframe)
+    window.addEventListener('message', function(event) {
+        
+        // IMPORTANT: Add a security check to ensure the message is from your Apps Script URL.
+        // This prevents other websites from sending malicious messages.
+        // You can be more specific if you know the exact origin.
+        if (!event.origin.includes('googleusercontent.com')) {
+            console.warn('Message from untrusted origin ignored:', event.origin);
+            return; 
+        }
+
+        // Check if the received message is the one we're expecting
+        if (event.data && event.data.type === 'reloadRequest') {
+            console.log('Reload request received from iframe. Reloading page...');
+            // Reload the page
+            window.location.reload();
+        }
+    });
+</script>
+
 
 </body>
 </html>
